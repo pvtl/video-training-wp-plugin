@@ -14,73 +14,80 @@
 
 namespace App\Plugins\Pvtl;
 
-class PvtlTraining
-{
-    // The name of the plugin (for cosmetic purposes)
-    protected $pluginName = 'Training';
+/**
+ * CLass for Training
+ */
+class PvtlTraining {
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		// Call the actions/hooks.
+		register_activation_hook( __FILE__, array( $this, 'on_activate' ) );
+		add_action( 'admin_menu', array( $this, 'add_admin_menu_item' ) );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
+	}
 
-    public function __construct()
-    {
-        // Call the actions/hooks
-        register_activation_hook(__FILE__, array($this, 'onActivate'));
-        add_action( 'admin_menu', array($this, 'addAdminMenuItem') );
-        add_action( 'admin_init', array($this, 'registerSettings') );
-    }
+	/**
+	 * On Plugin Activate, copy over front-end assets
+	 *
+	 * @return void
+	 */
+	public function on_activate() {
+		// Nothing yet.
+	}
 
-    /**
-     * On Plugin Activate, copy over front-end assets
-     *
-     * @return void
-     */
-    public function onActivate()
-    {
-        // Nothing yet
-    }
+	/**
+	 * Registers the settings available to this plugin.
+	 */
+	public function register_settings() {
+		// A single field - the API key (aka the slug of the post).
+		register_setting( 'pvtl-training', 'training_portal_slug' );
+	}
 
-    public function registerSettings()
-    {
-        register_setting( 'pvtl-training', 'training_portal_slug' );
-    }
+	/**
+	 * Adds a menu item to the admin menu
+	 *
+	 * @return void
+	 */
+	public function add_admin_menu_item() {
+		add_menu_page(
+			'Wordpress Training', // Page Title.
+			'Training', // Menu Title.
+			'edit_posts', // Capability.
+			'pvtl-training', // Menu Slug.
+			array( $this, 'render_admin_page' ), // Render function.
+			'dashicons-video-alt3', // Icon.
+			99 // Position.
+		);
+	}
 
-    /**
-     * Adds a menu item to the admin menu
-     *
-     * @return void
-     */
-    public function addAdminMenuItem()
-    {
-        add_menu_page(
-            'Wordpress Training', // Page Title
-            'Training', // Menu Title
-            'edit_posts', // Capability
-            'pvtl-training', // Menu Slug
-            array($this, 'renderAdminPage'), // Render function
-            'dashicons-video-alt3', // Icon
-            99 // Position
-        );
-    }
+	/**
+	 * Renders the admin page
+	 *
+	 * @return void
+	 */
+	public function render_admin_page() {
+		wp_enqueue_script(
+			'pvtl-training',
+			plugin_dir_url( __FILE__ ) . 'resources/assets/js/pvtl-training.js',
+			array( 'jquery' ),
+			'1.0.0',
+			true
+		);
 
-    /**
-     * Renders the admin page
-     *
-     * @return void
-     */
-    public function renderAdminPage()
-    {
-		wp_enqueue_script( 'pvtl-training', plugin_dir_url( __FILE__ ) . 'resources/assets/js/pvtl-training.js', array('jquery'), '1.0.0', true );
+		$training_portal_slug = get_option( 'training_portal_slug' );
 
-		$training_portal_slug = get_option('training_portal_slug');
-
-		if ( isset( $training_portal_slug ) && !empty( $training_portal_slug ) ) {
+		if ( isset( $training_portal_slug ) && ! empty( $training_portal_slug ) ) {
 			require_once plugin_dir_path( __FILE__ ) . 'resources/views/admin-iframe.php';
 		} else {
 			require_once plugin_dir_path( __FILE__ ) . 'resources/views/admin-form.php';
 		}
-    }
+	}
 }
 
-if (!defined('ABSPATH')) {
-    exit;  // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;  // Exit if accessed directly.
 }
 
-$pvtlTraining = new PvtlTraining();
+$pvtl_training = new PvtlTraining();
