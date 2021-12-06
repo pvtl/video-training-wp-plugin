@@ -26,7 +26,7 @@
 		allowtransparency="true"
 		allowfullscreen="true"
 		style="overflow: hidden; min-height: calc(100vh - 32px - 65px); height: 100%; width:100%; display: none;"
-		src="http://video-training.pub.localhost/training/<?php echo esc_attr( get_option( 'training_portal_slug' ) ); ?>"
+		src="https://training.pvtl.io/training/<?php echo esc_attr( get_option( 'training_portal_slug' ) ); ?>"
 	></iframe>
 
 	<form action="options.php" method="post">
