@@ -46,7 +46,9 @@
 		id="pvtlTrainingIframe"
 		allowtransparency="true"
 		allowfullscreen="true"
-		src="https://training.pvtl.io/training/<?php echo esc_attr( get_option( 'training_portal_slug' ) ); ?>"
+		referrerpolicy="origin"
+		title="<?php esc_attr_e( 'WordPress Training', 'pvtl-training' ); ?>"
+		src="<?php echo esc_url( $training_portal_url ); ?>"
 	></iframe>
 
 	<form action="options.php" method="post">

@@ -7,7 +7,7 @@
  * Author URI:      http://pivotal.agency
  * Text Domain:     pvtl-training
  * Domain Path:     /languages
- * Version:         1.0.2
+ * Version:         1.2.0
  *
  * @package         Training
  */
@@ -18,6 +18,13 @@ namespace App\Plugins\Pvtl;
  * CLass for Training
  */
 class PvtlTraining {
+	/**
+	 * URL for the hosted training portal.
+	 *
+	 * @var string
+	 */
+	const TRAINING_PORTAL_ORIGIN = 'https://training.pvtl.io';
+
 	/**
 	 * Constructor
 	 */
@@ -42,7 +49,23 @@ class PvtlTraining {
 	 */
 	public function register_settings() {
 		// A single field - the API key (aka the slug of the post).
-		register_setting( 'pvtl-training', 'training_portal_slug' );
+		register_setting(
+			'pvtl-training',
+			'training_portal_slug',
+			array(
+				'sanitize_callback' => array( $this, 'sanitize_training_portal_slug' ),
+			)
+		);
+	}
+
+	/**
+	 * Sanitizes the training portal slug before it is stored.
+	 *
+	 * @param string $slug Training portal slug.
+	 * @return string
+	 */
+	public function sanitize_training_portal_slug( $slug ) {
+		return sanitize_title( $slug );
 	}
 
 	/**
@@ -76,13 +99,24 @@ class PvtlTraining {
 			true
 		);
 
-		$training_portal_slug = get_option( 'training_portal_slug' );
+		$training_portal_slug = $this->sanitize_training_portal_slug( get_option( 'training_portal_slug' ) );
 
 		if ( isset( $training_portal_slug ) && ! empty( $training_portal_slug ) ) {
+			$training_portal_url = $this->get_training_portal_url( $training_portal_slug );
 			require_once plugin_dir_path( __FILE__ ) . 'resources/views/admin-iframe.php';
 		} else {
 			require_once plugin_dir_path( __FILE__ ) . 'resources/views/admin-form.php';
 		}
+	}
+
+	/**
+	 * Builds the remote training portal URL for the iframe.
+	 *
+	 * @param string $slug Training portal slug.
+	 * @return string
+	 */
+	public function get_training_portal_url( $slug ) {
+		return self::TRAINING_PORTAL_ORIGIN . '/training/' . rawurlencode( $slug );
 	}
 }
 
