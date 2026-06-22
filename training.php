@@ -7,7 +7,7 @@
  * Author URI:      http://pivotal.agency
  * Text Domain:     pvtl-training
  * Domain Path:     /languages
- * Version:         1.2.0
+ * Version:         1.3.0
  *
  * @package         Training
  */
@@ -33,6 +33,7 @@ class PvtlTraining {
 		register_activation_hook( __FILE__, array( $this, 'on_activate' ) );
 		add_action( 'admin_menu', array( $this, 'add_admin_menu_item' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_init', array( $this, 'send_training_admin_content_security_policy' ), PHP_INT_MAX );
 	}
 
 	/**
@@ -66,6 +67,50 @@ class PvtlTraining {
 	 */
 	public function sanitize_training_portal_slug( $slug ) {
 		return sanitize_title( $slug );
+	}
+
+	/**
+	 * Sends a CSP that allows the cross-origin assets required by the training admin page.
+	 *
+	 * @return void
+	 */
+	public function send_training_admin_content_security_policy() {
+		if ( ! $this->is_training_admin_page() || headers_sent() ) {
+			return;
+		}
+
+		header_remove( 'Content-Security-Policy' );
+
+		header(
+			'Content-Security-Policy: ' . implode(
+				'; ',
+				array(
+					"default-src 'self'",
+					"base-uri 'self'",
+					"object-src 'none'",
+					"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+					"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://pro.fontawesome.com",
+					"style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://pro.fontawesome.com",
+					"font-src 'self' data: https://fonts.gstatic.com https://pro.fontawesome.com",
+					"img-src 'self' data: https://ddbank.com.au https://maps.googleapis.com https://maps.gstatic.com https://*.googleapis.com https://*.gstatic.com https://*.ggpht.com https://www.google-analytics.com https://*.google.com https://www.google.com.au https://www.googletagmanager.com https://connect.facebook.net https://googleads.g.doubleclick.net https://www.googleadservices.com https://www.facebook.com https://secure.gravatar.com",
+					"frame-src 'self' https://training.pvtl.io https://*.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.facebook.com https://calculators.gbst.com",
+					"frame-ancestors 'self'",
+				)
+			)
+		);
+	}
+
+	/**
+	 * Determines whether the current request is for this plugin's admin page.
+	 *
+	 * @return bool
+	 */
+	public function is_training_admin_page() {
+		if ( ! is_admin() || ! isset( $_GET['page'] ) ) {
+			return false;
+		}
+
+		return 'pvtl-training' === sanitize_key( wp_unslash( $_GET['page'] ) );
 	}
 
 	/**
